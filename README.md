@@ -1,8 +1,7 @@
 # BitBucket to Gitea migration tool.
 
 ## Description
-Using BitBucket API we're getting repos, project of this repo, description and clone link. 
-Then, using Gitea API, creating organizations(gitea has no projects, but organizations replacing it fully), then starting migration for each repo from BitBucket.
+Simple script for all repos migration from BitBucket to Gitea.
 
 ## Using
 * Create authentification token in bitbucket
@@ -19,3 +18,6 @@ migrationPassword='password'
 
 run with
 ```python3 main.py```
+
+## Problems and logging 
+See migration.log, that will be created on script run
