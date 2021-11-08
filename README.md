@@ -12,7 +12,7 @@ BitBucketURL='bitbucket url'
 authTokenBB='bitbucket auth token'
 GiteaURL='gitea url'
 authTokenGitea='gitea auth token'
-migrationUsername='user in bb, that have access to all repos'
+migrationUsername='user in BitBucket, that have access to all repositories'
 migrationPassword='password'
 ```
 
