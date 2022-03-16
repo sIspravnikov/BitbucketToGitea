@@ -107,7 +107,7 @@ def getReposBB():
         for repo in reposJson:
             repoName = re.sub('[^A-Za-z0-9\-\.]+', '', repo['name']).lower()
             if repo['project']['type'] == 'PERSONAL':
-                projectName = re.sub('[^A-Za-z0-9]+', '', repo['project']['key']).lower()
+                projectName = repo['project']['key']
                 print("Personal project: " + projectName)
                 logging.info("Personal project: " + projectName)
             else:
@@ -119,6 +119,7 @@ def getReposBB():
             for cloneLinks in repo['links']['clone']:
                 if cloneLinks['name'] == "http":
                     cloneLink = cloneLinks['href']
+            projectName = re.sub('[^A-Za-z0-9]+', '', projectName)
             print("Migrating: repo: %s with description: %s from project: %s via clonelink: %s" % (repoName, description, projectName, cloneLink))
             logging.info("Migrating: repo: %s with description: %s from project: %s via clonelink: %s" % (repoName, description, projectName, cloneLink))
             
