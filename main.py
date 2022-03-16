@@ -3,6 +3,7 @@ import requests
 import json
 import sys
 import logging
+import re
 
 #test commit
 
@@ -33,7 +34,10 @@ def getGiteaOrganizationID(orgName):
 def startRepoMigration(cloneUrl, repoName, projectName):
     """ we're now have all, that we need, let's start migration """
     print("\nstarting migration of %s......\n" % (repoName))
+    print("\nstarting migration at %s......\n" % (cloneUrl))
     logging.info("starting migration of %s......" % (repoName))
+    logging.info("starting migration at %s......" % (cloneUrl))
+
 
     GiteaRepoAPIurl = props.GiteaURL + '/api/v1/repos/migrate'
     uid = getGiteaOrganizationID(projectName)
@@ -42,16 +46,16 @@ def startRepoMigration(cloneUrl, repoName, projectName):
         "auth_username": props.migrationUsername,
         "clone_addr": cloneUrl,
         # "description": "string",
-        "issues": True,
-        "labels": True,
-        "milestones": True,
-        "mirror": True,
+        "issues": False,
+        "labels": False,
+        "milestones": False,
+        "mirror": False,
         "private": True,
-        "pull_requests": True,
-        "releases": True,
+        "pull_requests": False,
+        "releases": False,
         "repo_name": repoName,
         "uid": uid,
-        "wiki": True
+        "wiki": False
         }
     try:
         startRepoMigrationresponse = requests.post(GiteaRepoAPIurl, json = repoPostData, headers = headersGitea)
@@ -68,6 +72,7 @@ def createGiteaOrganization(projectName, fullName, description):
     print("\ncreating organization %s......\n" % (projectName))
     logging.info("creating organization %s......" % (projectName))
     GiteaOrgsAPIurl = props.GiteaURL + '/api/v1/orgs'
+    # projectName = re.sub('[^A-Za-z0-9]+', '', projectName)
     orgPostData = {
         "username": projectName,
         "full_name": fullName,
@@ -79,8 +84,12 @@ def createGiteaOrganization(projectName, fullName, description):
         createGiteaOrganizationresponse = requests.post(GiteaOrgsAPIurl, json = orgPostData, headers = headersGitea)
         createGiteaOrganizationresponse.raise_for_status()
     except Exception as e:
-        print("Exception: %s \n Response: %s" % (e, createGiteaOrganizationresponse.text))
-        logging.error("Exception: %s \n Response: %s" % (e, createGiteaOrganizationresponse.text))
+        if "user already exists" not in createGiteaOrganizationresponse.text:
+            print("Exception: %s \n Response: %s" % (e, createGiteaOrganizationresponse.text))
+            logging.error("Exception: %s \n Response: %s" % (e, createGiteaOrganizationresponse.text))
+        else:
+            print("Skipping %s \n " % (projectName))
+            logging.info("Skipping %s \n " % (projectName))
     else:
         print("Response: %s" % (createGiteaOrganizationresponse.text))
         logging.info("Response: %s" % (createGiteaOrganizationresponse.text))
@@ -97,13 +106,20 @@ def getReposBB():
     else:
         reposJson = json.loads(response.text)['values']
         for repo in reposJson:
-            repoName = repo['name']
-            projectName = repo['project']['name']
+            repoName = re.sub('[^A-Za-z0-9\-\.]+', '', repo['name']).lower()
+            if repo['project']['type'] == 'PERSONAL':
+                projectName = re.sub('[^A-Za-z0-9]+', '', repo['project']['key']).lower()
+                print("Personal project: " + projectName)
+                logging.info("Personal project: " + projectName)
+            else:
+                projectName = repo['project']['name']
             try:
                 description = repo['project']['description']
             except KeyError:
                 description = 'None'
-            cloneLink = props.BitBucketURL + "/scm/" + projectName + "/" + repoName + ".git"
+            for cloneLinks in repo['links']['clone']:
+                if cloneLinks['name'] == "http":
+                    cloneLink = cloneLinks['href']
             print("Migrating: repo: %s with description: %s from project: %s via clonelink: %s" % (repoName, description, projectName, cloneLink))
             logging.info("Migrating: repo: %s with description: %s from project: %s via clonelink: %s" % (repoName, description, projectName, cloneLink))
             
