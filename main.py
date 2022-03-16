@@ -72,7 +72,6 @@ def createGiteaOrganization(projectName, fullName, description):
     print("\ncreating organization %s......\n" % (projectName))
     logging.info("creating organization %s......" % (projectName))
     GiteaOrgsAPIurl = props.GiteaURL + '/api/v1/orgs'
-    # projectName = re.sub('[^A-Za-z0-9]+', '', projectName)
     orgPostData = {
         "username": projectName,
         "full_name": fullName,
