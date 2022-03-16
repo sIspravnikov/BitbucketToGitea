@@ -131,5 +131,6 @@ def getReposBB():
 
 def main():
     getReposBB()
-
+    logging.info("Migration finished")
+    print("Migration finished")
 main()
