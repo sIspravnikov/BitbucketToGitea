@@ -5,8 +5,6 @@ import sys
 import logging
 import re
 
-#test commit
-
 logging.basicConfig(level=logging.INFO, filename='migration.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
 headersBB = {
@@ -18,7 +16,7 @@ headersGitea = {
 }
 
 def getGiteaOrganizationID(orgName):
-    """ Gitea not accepting organization name as parameter, only it's uid, so we're gonna need to get it from API"""
+    """ Gitea can't accept organization name as parameter, only it's uid, so we need to get that uid from API """
     GiteaOrgsOrgAPIurl = props.GiteaURL + '/api/v1/orgs/' + orgName
     try:
         GiteaGetOrgResponse = requests.get(GiteaOrgsOrgAPIurl, headers=headersGitea)
@@ -32,11 +30,10 @@ def getGiteaOrganizationID(orgName):
 
 
 def startRepoMigration(cloneUrl, repoName, projectName):
-    """ we're now have all, that we need, let's start migration """
-    print("\nstarting migration of %s......\n" % (repoName))
-    print("\nstarting migration at %s......\n" % (cloneUrl))
-    logging.info("starting migration of %s......" % (repoName))
-    logging.info("starting migration at %s......" % (cloneUrl))
+    """ Now we have all we need, let's start migration """
+
+    print("\nstarting migration of %s via %s......\n" % (repoName, cloneUrl))
+    logging.info("starting migration of %s via %s......" % (repoName, cloneUrl))
 
 
     GiteaRepoAPIurl = props.GiteaURL + '/api/v1/repos/migrate'
@@ -61,14 +58,14 @@ def startRepoMigration(cloneUrl, repoName, projectName):
         startRepoMigrationresponse = requests.post(GiteaRepoAPIurl, json = repoPostData, headers = headersGitea)
         startRepoMigrationresponse.raise_for_status()    
     except Exception as e:
-        print("%s, : Exception: %s, Response: %s" % (repoName, e, startRepoMigrationresponse.text))
-        logging.error("%s, : Exception: %s, Response: %s" % (repoName, e, startRepoMigrationresponse.text))
+        print("%s: Exception: %s, Response: %s" % (repoName, e, startRepoMigrationresponse.text))
+        logging.error("%s: Exception: %s, Response: %s" % (repoName, e, startRepoMigrationresponse.text))
     else:
-        print("%s %s" % (repoName, startRepoMigrationresponse.text))
-        logging.info("%s %s" % (repoName, startRepoMigrationresponse.text))
+        print("%s: %s" % (repoName, startRepoMigrationresponse.text))
+        logging.info("%s: %s" % (repoName, startRepoMigrationresponse.text))
 
 def createGiteaOrganization(projectName, fullName, description):
-    """ before migration, we're gonna need to create organization, in which project will be stored """
+    """ We need to create organization, project will be stored in """
     print("\ncreating organization %s......\n" % (projectName))
     logging.info("creating organization %s......" % (projectName))
     GiteaOrgsAPIurl = props.GiteaURL + '/api/v1/orgs'
@@ -94,7 +91,7 @@ def createGiteaOrganization(projectName, fullName, description):
         logging.info("Response: %s" % (createGiteaOrganizationresponse.text))
 
 def getReposBB():
-    """Get all bitbucket repos and it's parameters: clone url, repo name, project name, description."""
+    """ Get all bitbucket repos and it's parameters: clone url, repo name, project name, description."""
     BitBucketAPIurl = props.BitBucketURL + "/rest/api/1.0/repos?limit=1000"
     try:
         response = requests.get(BitBucketAPIurl, headers=headersBB)
