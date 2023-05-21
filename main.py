@@ -1,3 +1,4 @@
+from base64 import b64encode
 import props
 import requests
 import json
@@ -7,9 +8,12 @@ import re
 
 logging.basicConfig(level=logging.INFO, filename='migration.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
+BBauth = f"{props.migrationUsername}:{props.migrationPassword}"
+
 headersBB = {
-    'Authorization': 'Bearer ' + props.authTokenBB
+    'Authorization': 'Basic ' + b64encode(BBauth.encode("utf-8")).decode("utf-8")
 }
+
 headersGitea = {
     'Authorization': 'token ' + props.authTokenGitea,
     'Content-Type': 'application/json'
@@ -56,7 +60,7 @@ def startRepoMigration(cloneUrl, repoName, projectName):
         }
     try:
         startRepoMigrationresponse = requests.post(GiteaRepoAPIurl, json = repoPostData, headers = headersGitea)
-        startRepoMigrationresponse.raise_for_status()    
+        startRepoMigrationresponse.raise_for_status()
     except Exception as e:
         print("%s: Exception: %s, Response: %s" % (repoName, e, startRepoMigrationresponse.text))
         logging.error("%s: Exception: %s, Response: %s" % (repoName, e, startRepoMigrationresponse.text))
@@ -73,7 +77,7 @@ def createGiteaOrganization(projectName, fullName, description):
         "username": projectName,
         "full_name": fullName,
         "description": description,
-        "repo_admin_change_team_access": True, 
+        "repo_admin_change_team_access": True,
         "visibility": "private"
         }
     try:
@@ -92,9 +96,9 @@ def createGiteaOrganization(projectName, fullName, description):
 
 def getReposBB():
     """ Get all bitbucket repos and it's parameters: clone url, repo name, project name, description."""
-    BitBucketAPIurl = props.BitBucketURL + "/rest/api/1.0/repos?limit=1000"
+    BitbucketAPIurl = f"{props.BitbucketURL}/2.0/repositories/{props.BitbucketWorkspace}?limit=1000"
     try:
-        response = requests.get(BitBucketAPIurl, headers=headersBB)
+        response = requests.get(BitbucketAPIurl, headers=headersBB)
         response.raise_for_status()
     except Exception as e:
         print("Exception: %s \n Response: %s" % (e, response.text))
@@ -114,12 +118,12 @@ def getReposBB():
             except KeyError:
                 description = 'None'
             for cloneLinks in repo['links']['clone']:
-                if cloneLinks['name'] == "http":
+                if cloneLinks['name'] == "https":
                     cloneLink = cloneLinks['href']
-            projectName = re.sub('[^A-Za-z0-9]+', '', projectName)
+            projectName = f"{props.BitbucketWorkspace}_{re.sub('[^A-Za-z0-9]+', '', projectName)}"
             print("Migrating: repo: %s with description: %s from project: %s via clonelink: %s" % (repoName, description, projectName, cloneLink))
             logging.info("Migrating: repo: %s with description: %s from project: %s via clonelink: %s" % (repoName, description, projectName, cloneLink))
-            
+
             createGiteaOrganization(projectName, projectName, description)
             startRepoMigration(cloneLink, repoName, projectName)
             logging.info("_____________________________________________________________________________")
