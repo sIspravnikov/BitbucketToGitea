@@ -1,5 +1,5 @@
-BitBucketURL='https://bitbucket.example.com'
-authTokenBB='bitbucket auth token'
+BitbucketURL='https://api.bitbucket.org'
+BitbucketWorkspace='your-workspace'
 GiteaURL='https://gitea.example.com'
 authTokenGitea='gitea auth token'
 migrationUsername='user@example.com'
