@@ -1,5 +1,6 @@
 # BitBucket to Gitea migration tool.
 
+* For cloud BitBucket instances. For hosted, look at legacy branch
 ## Description
 Simple script for all repos migration from BitBucket to Gitea.
 
