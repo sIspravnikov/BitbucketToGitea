@@ -96,7 +96,7 @@ def createGiteaOrganization(projectName, fullName, description):
 
 def getReposBB():
     """ Get all bitbucket repos and it's parameters: clone url, repo name, project name, description."""
-    BitbucketAPIurl = f"{props.BitbucketURL}/2.0/repositories/{props.BitbucketWorkspace}?limit=1000"
+    BitbucketAPIurl = f"{props.BitbucketURL}/2.0/repositories/{props.BitbucketWorkspace}?pagelen=1000"
     try:
         response = requests.get(BitbucketAPIurl, headers=headersBB)
         response.raise_for_status()
